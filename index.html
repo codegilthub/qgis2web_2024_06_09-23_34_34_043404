@@ -1,0 +1,1146 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <style>
+        #map {
+            width: 1457px;
+            height: 851px;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="data/Jalan_Bandung_1.js"></script>
+        <script src="data/Kecamatan_2.js"></script>
+        <script src="data/MALL_3.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        })
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        document.querySelector(".leaflet-popup-pane").addEventListener("load", function(event) {
+          var tagName = event.target.tagName,
+            popup = map._popup;
+          // Also check if flag is already set.
+          if (tagName === "IMG" && popup && !popup._updated) {
+            popup._updated = true; // Set flag to prevent looping.
+            popup.update();
+          }
+        }, true);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+            if (bounds_group.getLayers().length) {
+                map.fitBounds(bounds_group.getBounds());
+            }
+        }
+        map.createPane('pane_GoogleRoad_0');
+        map.getPane('pane_GoogleRoad_0').style.zIndex = 400;
+        var layer_GoogleRoad_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleRoad_0',
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_GoogleRoad_0;
+        map.addLayer(layer_GoogleRoad_0);
+        function pop_Jalan_Bandung_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>OBJECTID</strong><br />' + (feature.properties['OBJECTID'] !== null ? autolinker.link(feature.properties['OBJECTID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Id</strong><br />' + (feature.properties['Id'] !== null ? autolinker.link(feature.properties['Id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Jenis_Jala</strong><br />' + (feature.properties['Jenis_Jala'] !== null ? autolinker.link(feature.properties['Jenis_Jala'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Nama_Jalan</strong><br />' + (feature.properties['Nama_Jalan'] !== null ? autolinker.link(feature.properties['Nama_Jalan'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Panjang_Ja</strong><br />' + (feature.properties['Panjang_Ja'] !== null ? autolinker.link(feature.properties['Panjang_Ja'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Shape_Leng</strong><br />' + (feature.properties['Shape_Leng'] !== null ? autolinker.link(feature.properties['Shape_Leng'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_Jalan_Bandung_1_0(feature) {
+            switch(String(feature.properties['Jenis_Jala'])) {
+                case 'Jalan Arteri':
+                    return {
+                pane: 'pane_Jalan_Bandung_1',
+                opacity: 1,
+                color: 'rgba(255,127,0,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Jalan Primer':
+                    return {
+                pane: 'pane_Jalan_Bandung_1',
+                opacity: 1,
+                color: 'rgba(225,23,1,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Jalan Tol':
+                    return {
+                pane: 'pane_Jalan_Bandung_1',
+                opacity: 1,
+                color: 'rgba(255,231,11,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_Jalan_Bandung_1');
+        map.getPane('pane_Jalan_Bandung_1').style.zIndex = 401;
+        map.getPane('pane_Jalan_Bandung_1').style['mix-blend-mode'] = 'normal';
+        var layer_Jalan_Bandung_1 = new L.geoJson(json_Jalan_Bandung_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Jalan_Bandung_1',
+            layerName: 'layer_Jalan_Bandung_1',
+            pane: 'pane_Jalan_Bandung_1',
+            onEachFeature: pop_Jalan_Bandung_1,
+            style: style_Jalan_Bandung_1_0,
+        });
+        bounds_group.addLayer(layer_Jalan_Bandung_1);
+        map.addLayer(layer_Jalan_Bandung_1);
+        function pop_Kecamatan_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nama'] !== null ? autolinker.link(feature.properties['nama'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_Kecamatan_2_0(feature) {
+            switch(String(feature.properties['nama'])) {
+                case 'ANDIR':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(13,8,135,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'ANTAPANI':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(35,5,144,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'ARCAMANIK':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(51,5,152,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'ASTANAANYAR':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(66,4,157,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'BABAKAN CIPARAY':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(79,2,162,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'BANDUNG KIDUL':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(93,1,166,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'BANDUNG KULON':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(107,0,168,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'BANDUNG WETAN':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(119,1,168,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'BATUNUNGGAL':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(132,6,167,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'BOJONGLOA KALER':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(144,13,163,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'BOJONGLOA KIDUL':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(156,23,158,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'BUAHBATU':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(166,33,151,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'CIBEUNYING KALER':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(176,42,144,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'CIBEUNYING KIDUL':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(186,52,136,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'CIBIRU':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(195,61,128,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'CICENDO':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(203,71,120,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'CIDADAP':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(211,80,112,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'CINAMBO':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(218,90,105,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'COBLONG':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(224,100,98,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'GEDEBAGE':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(231,110,91,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'KIARACONDONG':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(237,121,83,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'LENGKONG':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(242,131,76,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'MANDALAJATI':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(246,143,68,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'PANYILEUKAN':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(249,155,62,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'RANCASARI':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,167,54,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'REGOL':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,179,47,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'SUKAJADI':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,192,41,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'SUKASARI':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,205,37,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'SUMURBANDUNG':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(249,220,37,0.4)',
+                interactive: true,
+            }
+                    break;
+                case 'UJUNGBERUNG':
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(245,234,38,0.4)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_Kecamatan_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.4)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(240,249,33,0.4)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_Kecamatan_2');
+        map.getPane('pane_Kecamatan_2').style.zIndex = 402;
+        map.getPane('pane_Kecamatan_2').style['mix-blend-mode'] = 'normal';
+        var layer_Kecamatan_2 = new L.geoJson(json_Kecamatan_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Kecamatan_2',
+            layerName: 'layer_Kecamatan_2',
+            pane: 'pane_Kecamatan_2',
+            onEachFeature: pop_Kecamatan_2,
+            style: style_Kecamatan_2_0,
+        });
+        bounds_group.addLayer(layer_Kecamatan_2);
+        map.addLayer(layer_Kecamatan_2);
+        function pop_MALL_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Name</strong><br />' + (feature.properties['Name'] !== null ? autolinker.link(feature.properties['Name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>FolderPath</strong><br />' + (feature.properties['FolderPath'] !== null ? autolinker.link(feature.properties['FolderPath'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Snippet</strong><br />' + (feature.properties['Snippet'] !== null ? autolinker.link(feature.properties['Snippet'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>PopupInfo</strong><br />' + (feature.properties['PopupInfo'] !== null ? autolinker.link(feature.properties['PopupInfo'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_MALL_3_0(feature) {
+            switch(String(feature.properties['Name'])) {
+                case '23 Paskal Shopping Center':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(0,0,4,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Bandung Electronic Center':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(7,6,28,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Bandung Indah Plaza':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(21,14,55,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Braga Citywalk':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(38,17,86,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ciwalk':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(59,15,111,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Click Square':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(80,18,123,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'D\'Botanica Bandung Mall':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(100,26,128,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Festival Citylink':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(120,34,130,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Istana Plaza':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(140,41,129,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Living Plaza (Dago Plaza)':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(161,48,126,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Metro Indah Mall':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(182,55,122,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Milan Kopo Mall':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(202,62,114,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Parahyangan Plaza':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(221,74,105,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Paris Van Java':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(237,89,96,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Pasteur Hyperpoint':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(246,111,92,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Piset Square':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(251,135,97,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Rajawali Plaza':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,159,109,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Setrasari Plaza':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,183,125,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'The Kings Shopping Centre':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,206,145,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Trans Studio Mall':
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,230,167,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_MALL_3',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,253,191,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_MALL_3');
+        map.getPane('pane_MALL_3').style.zIndex = 403;
+        map.getPane('pane_MALL_3').style['mix-blend-mode'] = 'normal';
+        var layer_MALL_3 = new L.geoJson(json_MALL_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_MALL_3',
+            layerName: 'layer_MALL_3',
+            pane: 'pane_MALL_3',
+            onEachFeature: pop_MALL_3,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_MALL_3_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_MALL_3);
+        map.addLayer(layer_MALL_3);
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        var baseMaps = {};
+        var overlaysTree = [
+            {label: 'MALL<br /><table><tr><td style="text-align: center;"><img src="legend/MALL_3_23PaskalShoppingCenter0.png" /></td><td>23 Paskal Shopping Center</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_BandungElectronicCenter1.png" /></td><td>Bandung Electronic Center</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_BandungIndahPlaza2.png" /></td><td>Bandung Indah Plaza</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_BragaCitywalk3.png" /></td><td>Braga Citywalk</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_Ciwalk4.png" /></td><td>Ciwalk</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_ClickSquare5.png" /></td><td>Click Square</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_DBotanicaBandungMall6.png" /></td><td>D\'Botanica Bandung Mall</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_FestivalCitylink7.png" /></td><td>Festival Citylink</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_IstanaPlaza8.png" /></td><td>Istana Plaza</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_LivingPlazaDagoPlaza9.png" /></td><td>Living Plaza (Dago Plaza)</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_MetroIndahMall10.png" /></td><td>Metro Indah Mall</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_MilanKopoMall11.png" /></td><td>Milan Kopo Mall</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_ParahyanganPlaza12.png" /></td><td>Parahyangan Plaza</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_ParisVanJava13.png" /></td><td>Paris Van Java</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_PasteurHyperpoint14.png" /></td><td>Pasteur Hyperpoint</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_PisetSquare15.png" /></td><td>Piset Square</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_RajawaliPlaza16.png" /></td><td>Rajawali Plaza</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_SetrasariPlaza17.png" /></td><td>Setrasari Plaza</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_TheKingsShoppingCentre18.png" /></td><td>The Kings Shopping Centre</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_TransStudioMall19.png" /></td><td>Trans Studio Mall</td></tr><tr><td style="text-align: center;"><img src="legend/MALL_3_20.png" /></td><td></td></tr></table>', layer: layer_MALL_3},
+            {label: 'Kecamatan<br /><table><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_ANDIR0.png" /></td><td>ANDIR</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_ANTAPANI1.png" /></td><td>ANTAPANI</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_ARCAMANIK2.png" /></td><td>ARCAMANIK</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_ASTANAANYAR3.png" /></td><td>ASTANAANYAR</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_BABAKANCIPARAY4.png" /></td><td>BABAKAN CIPARAY</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_BANDUNGKIDUL5.png" /></td><td>BANDUNG KIDUL</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_BANDUNGKULON6.png" /></td><td>BANDUNG KULON</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_BANDUNGWETAN7.png" /></td><td>BANDUNG WETAN</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_BATUNUNGGAL8.png" /></td><td>BATUNUNGGAL</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_BOJONGLOAKALER9.png" /></td><td>BOJONGLOA KALER</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_BOJONGLOAKIDUL10.png" /></td><td>BOJONGLOA KIDUL</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_BUAHBATU11.png" /></td><td>BUAHBATU</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_CIBEUNYINGKALER12.png" /></td><td>CIBEUNYING KALER</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_CIBEUNYINGKIDUL13.png" /></td><td>CIBEUNYING KIDUL</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_CIBIRU14.png" /></td><td>CIBIRU</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_CICENDO15.png" /></td><td>CICENDO</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_CIDADAP16.png" /></td><td>CIDADAP</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_CINAMBO17.png" /></td><td>CINAMBO</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_COBLONG18.png" /></td><td>COBLONG</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_GEDEBAGE19.png" /></td><td>GEDEBAGE</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_KIARACONDONG20.png" /></td><td>KIARACONDONG</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_LENGKONG21.png" /></td><td>LENGKONG</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_MANDALAJATI22.png" /></td><td>MANDALAJATI</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_PANYILEUKAN23.png" /></td><td>PANYILEUKAN</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_RANCASARI24.png" /></td><td>RANCASARI</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_REGOL25.png" /></td><td>REGOL</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_SUKAJADI26.png" /></td><td>SUKAJADI</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_SUKASARI27.png" /></td><td>SUKASARI</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_SUMURBANDUNG28.png" /></td><td>SUMURBANDUNG</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_UJUNGBERUNG29.png" /></td><td>UJUNGBERUNG</td></tr><tr><td style="text-align: center;"><img src="legend/Kecamatan_2_30.png" /></td><td></td></tr></table>', layer: layer_Kecamatan_2},
+            {label: 'Jalan_Bandung<br /><table><tr><td style="text-align: center;"><img src="legend/Jalan_Bandung_1_JalanArteri0.png" /></td><td>Jalan Arteri</td></tr><tr><td style="text-align: center;"><img src="legend/Jalan_Bandung_1_JalanPrimer1.png" /></td><td>Jalan Primer</td></tr><tr><td style="text-align: center;"><img src="legend/Jalan_Bandung_1_JalanTol2.png" /></td><td>Jalan Tol</td></tr></table>', layer: layer_Jalan_Bandung_1},
+            {label: "Google Road", layer: layer_GoogleRoad_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        </script>
+    </body>
+</html>
